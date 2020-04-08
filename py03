@@ -13,6 +13,8 @@ import json
 # #
 # # def open_url():
 
+
+
 class BaiDuTranslateWeb:
     def __init__(self):
         self.url="https://fanyi.baidu.com/v2transapi?from=zh&to=en"
