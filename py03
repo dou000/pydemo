@@ -1,0 +1,60 @@
+import requests
+import execjs
+import json
+#
+# req = urllib.request.Request("http://fanyi.youdao.com/translate_o?smartresult=dict&smartresult=rule")
+# req.add_header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.116 Safari/537.36")
+# respond = urllib.request.urlopen(req)
+# html = respond.read()
+# print(html.decode('utf-8'))
+# with open('tetst.txt','wb') as f:
+#     f.write(html)
+#
+# #
+# # def open_url():
+
+class BaiDuTranslateWeb:
+    def __init__(self):
+        self.url="https://fanyi.baidu.com/v2transapi?from=zh&to=en"
+
+        self.headers = {
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.116 Safari/537.36",
+            "cookie": "BAIDUID=A08EEC81969AE8C22308F49AF5006501:FG=1; PSTM=1561972962; BIDUPSID=939D7CC6EE71E9117F01093DD85BB163; REALTIME_TRANS_SWITCH=1; FANYI_WORD_SWITCH=1; HISTORY_SWITCH=1; SOUND_SPD_SWITCH=1; SOUND_PREFER_SWITCH=1; BDUSS=3IyNDl-UVoxWGJwa1pIaXZDdC1GUXM5RFVBVkxqR0U0cUMtWGFoZ1VMT1VTa1ZkSVFBQUFBJCQAAAAAAAAAAAEAAABZ11dkytTK1G15ZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJS9HV2UvR1dQ; APPGUIDE_8_2_2=1; MCITY=-289%3A; BDORZ=B490B5EBF6F3CD402E515D22BCDA1598; to_lang_often=%5B%7B%22value%22%3A%22zh%22%2C%22text%22%3A%22%u4E2D%u6587%22%7D%2C%7B%22value%22%3A%22en%22%2C%22text%22%3A%22%u82F1%u8BED%22%7D%5D; from_lang_often=%5B%7B%22value%22%3A%22fin%22%2C%22text%22%3A%22%u82AC%u5170%u8BED%22%7D%2C%7B%22value%22%3A%22en%22%2C%22text%22%3A%22%u82F1%u8BED%22%7D%2C%7B%22value%22%3A%22zh%22%2C%22text%22%3A%22%u4E2D%u6587%22%7D%5D; H_PS_PSSID=1457_31120_21083_31186_30906_31229_30823_31086_26350_31164_31195; Hm_lvt_64ecd82404c51e03dc91cb9e8c025574=1586000336,1586094800,1586182387,1586238715; Hm_lpvt_64ecd82404c51e03dc91cb9e8c025574=1586238725; __yjsv5_shitong=1.0_7_8dc8ce901ff1b8fd941ed4df856d9748713a_300_1586238724293_223.166.128.188_e4c5aef5; yjs_js_security_passport=114b70ee19466dfad30f8b79da69c408cfc0901c_1586238725_js"
+        }
+        self.data = {
+            "from": "zh",
+            "to": "en",
+            "transtype": "realtime",
+            "simple_means_flag": "",
+            "sign": "sign",
+            "token": "7d8b2a1e53f709747e1e081e8ddecd5c",
+            "domain": "common"
+        }
+
+    def get_sign(self):
+        with open('../baidusign.js') as f:
+            jsData = f.read()
+            sign = execjs.compile(jsData).call("e", self.input)
+            return sign
+
+    def run(self):
+        #self.input = input("请输入中文")
+        self.input = '阿里巴巴曾在全球经济危机期间首次启动“春雷计划”，帮助国内中小企业乘互联网之势冲出了寒冬。'
+        self.data["query"]=self.input
+        self.data["sign"]=self.get_sign()
+        response = requests.post(self.url, data=self.data, headers=self.headers)
+        self.result_strs = response .content.decode()
+
+
+    def get_result(self):
+        result_dict = json.loads(self.result_strs)
+        if 'dst' in self.result_strs:
+            dsts = result_dict.get('trans_result').get('data')[0].get('dst')
+        #dsts = result_dict['trans_result']['data'][0].get('dst')
+            print(dsts)
+
+
+if __name__ == '__main__':
+    web = BaiDuTranslateWeb()
+    web.run()
+    web.get_result()
